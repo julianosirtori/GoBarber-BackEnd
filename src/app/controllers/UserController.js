@@ -1,4 +1,5 @@
 import User from '../models/User';
+import File from '../models/File';
 
 class UserController {
   async store(req, res) {
@@ -24,9 +25,19 @@ class UserController {
       return res.status(401).json({ error: 'Password does not match' });
     }
 
-    const { id, name, provider } = await user.update(req.body);
+    await user.update(req.body);
 
-    return res.json({ id, name, email, provider });
+    const { id, name, avatar } = await User.findAndCountAll(req.userId, {
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['id', 'path', 'url'],
+        },
+      ],
+    });
+
+    return res.json({ id, name, email, avatar });
   }
 }
 
